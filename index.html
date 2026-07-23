@@ -2,105 +2,181 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Bel Sekolah MP3 Otomatis (API Version)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bel Sekolah Otomatis</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f4f6f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .clock-card { background: linear-gradient(135deg, #0d6efd, #0a58ca); color: white; border: none; }
-    .digital-clock { font-size: 3.8rem; font-weight: bold; font-family: monospace; }
+    :root {
+      --primary-color: #0d6efd;
+      --bg-color: #f8f9fa;
+    }
+    body {
+      background-color: var(--bg-color);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding-bottom: 70px; /* Space untuk bottom navigation */
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Clock Widget Mobile */
+    .clock-card {
+      background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+      color: white;
+      border-radius: 20px;
+      padding: 20px 15px;
+      box-shadow: 0 4px 15px rgba(13, 110, 253, 0.25);
+    }
+    .digital-clock {
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      font-family: monospace;
+    }
+    /* Card List Item Mobile */
+    .schedule-card {
+      background: white;
+      border: none;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      transition: transform 0.1s ease;
+    }
+    .schedule-card:active {
+      transform: scale(0.98);
+    }
+    .time-badge {
+      background: #e7f1ff;
+      color: var(--primary-color);
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 6px 12px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+    .day-badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e9ecef;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    }
+    .nav-item-btn {
+      border: none;
+      background: none;
+      color: #6c757d;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 33%;
+    }
+    .nav-item-btn.active {
+      color: var(--primary-color);
+    }
+    .nav-item-btn i {
+      font-size: 1.2rem;
+    }
+    /* Form Select Filter Compact */
+    .filter-select {
+      border-radius: 12px;
+      border: 1px solid #dee2e6;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      background-color: white;
+    }
   </style>
 </head>
-<body class="p-4">
-  <div class="container">
+<body>
+
+  <!-- NAVBAR ATAS REFORMATTED FOR MOBILE -->
+  <div class="px-3 pt-3 pb-2">
+    <div class="d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold m-0 text-dark">🔔 Bel Sekolah</h5>
+      <button class="btn btn-sm btn-light border-0 fw-bold shadow-sm rounded-pill px-3" onclick="muatJadwal()">
+        🔄 Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="container px-3">
     
-    <!-- HEADER JAM -->
-    <div class="card clock-card text-center p-4 mb-4 shadow rounded-4">
-      <h4 id="namaHariTanggal" class="mb-1 fw-normal">--</h4>
+    <!-- WIDGET JAM & AKTIVASI SUARA -->
+    <div class="clock-card text-center my-2">
+      <div id="namaHariTanggal" class="small text-white-50 fw-semibold text-uppercase mb-1">--</div>
       <div class="digital-clock" id="jamDigital">00:00:00</div>
+      
       <div class="mt-3">
-        <button class="btn btn-warning btn-lg fw-bold px-4 py-2 shadow" id="btnAktifkan" onclick="aktifkanAudio()">
-          🔔 KLIK DISINI SEKALI UNTUK MENGAKTIFKAN SUARA BEL MP3
+        <button class="btn btn-warning w-100 fw-bold py-2 rounded-pill shadow-sm" id="btnAktifkan" onclick="aktifkanAudio()">
+          🔊 Aktifkan Suara Bel HP
         </button>
       </div>
     </div>
 
-    <div class="row g-4">
-      <!-- TABEL JADWAL -->
-      <div class="col-md-8">
-        <div class="card shadow-sm border-0 rounded-3">
-          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h6 class="mb-0 fw-bold">JADWAL BEL SEKOLAH</h6>
-            
-            <div class="d-flex align-items-center gap-2">
-              <label class="small fw-bold text-white mb-0">Tampilkan Hari:</label>
-              <select id="selectHariFilter" class="form-select form-select-sm fw-bold text-primary" style="width: auto;" onchange="tampilkanTabelJadwal()">
-                <option value="HARI_INI">📅 Hari Ini (Otomatis)</option>
-                <option value="senin">Senin (Upacara)</option>
-                <option value="selasa">Selasa</option>
-                <option value="rabu">Rabu</option>
-                <option value="kamis">Kamis</option>
-                <option value="jumat">Jumat</option>
-                <option value="sabtu">Sabtu</option>
-                <option value="SEMUA">📋 Semua Hari</option>
-              </select>
-              <button class="btn btn-sm btn-light text-primary fw-bold" onclick="muatJadwal()">🔄 Reload</button>
-            </div>
-          </div>
-          <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0 text-center">
-              <thead class="table-light">
-                <tr>
-                  <th>Hari</th>
-                  <th>Jam</th>
-                  <th>Keterangan</th>
-                  <th>Status MP3</th>
-                  <th>Aksi Manual</th>
-                </tr>
-              </thead>
-              <tbody id="tabelJadwal">
-                <tr><td colspan="5" class="text-muted py-4">Memuat data jadwal via API...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+    <!-- PLAYER AUDIO RINGKAS -->
+    <div class="card border-0 shadow-sm rounded-4 p-3 my-3">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="spinner-grow spinner-grow-sm text-success" role="status"></span>
+        <span class="small fw-bold text-secondary" id="nowPlayingText">Status: Standby</span>
       </div>
+      <audio id="audioPlayer" controls style="width: 100%; height: 36px;"></audio>
+    </div>
 
-      <!-- PLAYER AUDIO MP3 -->
-      <div class="col-md-4">
-        <div class="card shadow-sm border-0 rounded-3">
-          <div class="card-header bg-dark text-white fw-bold">PLAYER AUDIO MP3</div>
-          <div class="card-body text-center py-4">
-            <p id="nowPlayingText" class="text-secondary fw-semibold mb-3">Sistem Siap Memutar MP3</p>
-            <audio id="audioPlayer" controls style="width: 100%;"></audio>
-            <div class="mt-3">
-              <span class="badge bg-success" id="indicatorOtomatis">● Mesin API Pengecek Jam Aktif</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- FILTER HARI -->
+    <div class="d-flex justify-content-between align-items-center my-3">
+      <span class="fw-bold small text-secondary">JADWAL BEL</span>
+      <select id="selectHariFilter" class="filter-select text-primary" onchange="tampilkanTabelJadwal()">
+        <option value="HARI_INI">📅 Hari Ini</option>
+        <option value="senin">Senin (Upacara)</option>
+        <option value="selasa">Selasa</option>
+        <option value="rabu">Rabu</option>
+        <option value="kamis">Kamis</option>
+        <option value="jumat">Jumat</option>
+        <option value="sabtu">Sabtu</option>
+        <option value="SEMUA">📋 Semua Hari</option>
+      </select>
+    </div>
+
+    <!-- DAFTAR JADWAL (CARD VIEW UNTUK HP) -->
+    <div id="daftarJadwalContainer">
+      <div class="text-center py-5 text-muted small">Memuat data jadwal via API...</div>
     </div>
 
   </div>
 
-  <!-- MODAL UPLOAD FILE -->
+  <!-- MODAL UPLOAD FILE MP3 -->
   <div class="modal fade" id="uploadModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fs-6 fw-bold" id="uploadModalTitle">Upload Audio MP3 Bel</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 rounded-4 shadow">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-bold" id="uploadModalTitle">Upload MP3 Bel</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="uploadForm">
             <input type="hidden" id="targetRow">
             <div class="mb-3">
-              <label class="form-label font-weight-bold">Pilih File MP3 dari Laptop:</label>
-              <input type="file" class="form-control" id="audioFileInput" accept="audio/*" required>
+              <label class="form-label small text-secondary fw-semibold">Pilih file audio MP3 dari memori HP:</label>
+              <input type="file" class="form-control rounded-3" id="audioFileInput" accept="audio/*" required>
             </div>
-            <button type="submit" class="btn btn-primary w-100" id="btnSubmitUpload">📤 Upload via API</button>
+            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3" id="btnSubmitUpload">
+              📤 Unggah Sekarang
+            </button>
           </form>
-          <div id="uploadStatus" class="mt-3 text-center"></div>
+          <div id="uploadStatus" class="mt-2 text-center small"></div>
         </div>
       </div>
     </div>
@@ -108,8 +184,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // URL API ENDPOINT
-    const API_URL = "https://script.google.com/macros/s/AKfycbxSjOVZ-TKYooXU42JSG_gQlRPle_aVqAykUYyMJ-Gif4voB-GpCSdu7Mo6EkkkIpD7-g/exec";
+    // URL API ENDPOINT 
+    const API_URL = "https://script.google.com/macros/s/AKfycbxo-jf4uumsTHqvzPAsGwYixDftvZi1RuLPUMVnFdigPDF1cSHGqN9axgdlbKUP65vGGA/exec";
 
     let daftarJadwal = [];
     let belSudahBunyi = {};
@@ -132,8 +208,8 @@
 
     function setSistemReady() {
       const btn = document.getElementById('btnAktifkan');
-      btn.className = "btn btn-success btn-lg fw-bold px-4 py-2 shadow disabled";
-      btn.innerText = "✅ SUARA MP3 AKTIF & SIAP BERBUNYI OTOMATIS";
+      btn.className = "btn btn-success w-100 fw-bold py-2 rounded-pill shadow-sm disabled";
+      btn.innerText = "✅ Suara Bel Aktif";
     }
 
     function updateClock() {
@@ -146,16 +222,18 @@
       document.getElementById('jamDigital').innerText = `${h}:${m}:${s}`;
       
       const hariSekarang = namaHari[now.getDay()];
-      const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-      document.getElementById('namaHariTanggal').innerText = `${hariSekarang.toUpperCase()}, ${tanggal}`;
+      const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('namaHariTanggal').innerText = `${hariSekarang}, ${tanggal}`;
 
       if (s === "00") {
         cekJadwalBel(jamSekarang, hariSekarang);
       }
     }
 
-    // MEMUAT JADWAL DARI API
     function muatJadwal() {
+      const container = document.getElementById('daftarJadwalContainer');
+      container.innerHTML = '<div class="text-center py-4 text-muted small">Sync jadwal...</div>';
+
       fetch(`${API_URL}?action=getJadwal`)
         .then(res => res.json())
         .then(data => {
@@ -163,13 +241,13 @@
           tampilkanTabelJadwal();
         })
         .catch(err => {
-          console.error("Gagal muat API:", err);
+          container.innerHTML = '<div class="text-center py-4 text-danger small">Gagal menghubungkan API. Coba refresh.</div>';
         });
     }
 
     function tampilkanTabelJadwal() {
-      const tbody = document.getElementById('tabelJadwal');
-      tbody.innerHTML = '';
+      const container = document.getElementById('daftarJadwalContainer');
+      container.innerHTML = '';
       
       const now = new Date();
       const hariIni = namaHari[now.getDay()];
@@ -186,42 +264,47 @@
       }
 
       if (jadwalFiltered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-muted py-4">Tidak ada jadwal bel untuk filter ini.</td></tr>';
+        container.innerHTML = '<div class="text-center py-5 text-muted small">Tidak ada data jadwal untuk opsi ini.</div>';
         return;
       }
 
       jadwalFiltered.forEach((j) => {
         const hasAudio = j.audioId !== "";
         const statusBadge = hasAudio 
-          ? '<span class="badge bg-success">MP3 Ready</span>' 
-          : '<span class="badge bg-danger">MP3 Kosong</span>';
+          ? '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">MP3 Siap</span>' 
+          : '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">MP3 Kosong</span>';
 
-        tbody.innerHTML += `
-          <tr>
-            <td class="fw-bold text-uppercase text-secondary small">${j.hari}</td>
-            <td class="fw-bold text-primary">${j.jam} WIB</td>
-            <td class="fw-semibold">${j.keterangan}</td>
-            <td>${statusBadge}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-success fw-bold me-1" onclick="bukaModalUpload(${j.rowNum}, '${j.keterangan} (${j.hari.toUpperCase()})')">
-                📁 Upload MP3
+        container.innerHTML += `
+          <div class="schedule-card p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="time-badge">${j.jam} WIB</span>
+              <div>
+                <span class="day-badge text-muted me-1">${j.hari}</span>
+                ${statusBadge}
+              </div>
+            </div>
+            
+            <div class="fw-bold text-dark mb-3">${j.keterangan}</div>
+            
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-primary w-100 fw-bold rounded-3" onclick="bukaModalUpload(${j.rowNum}, '${j.keterangan}')">
+                📁 Upload
               </button>
-              ${hasAudio ? `<button class="btn btn-sm btn-outline-primary fw-bold" onclick="putarMP3Server('${j.audioId}', '${j.keterangan}')">🔔 Test MP3</button>` : ''}
-            </td>
-          </tr>
+              ${hasAudio ? `<button class="btn btn-sm btn-primary w-100 fw-bold rounded-3" onclick="putarMP3Server('${j.audioId}', '${j.keterangan}')">🔔 Tes</button>` : ''}
+            </div>
+          </div>
         `;
       });
     }
 
     function bukaModalUpload(rowNum, keterangan) {
       document.getElementById('targetRow').value = rowNum;
-      document.getElementById('uploadModalTitle').innerText = 'Upload Audio MP3: ' + keterangan;
+      document.getElementById('uploadModalTitle').innerText = 'Upload MP3: ' + keterangan;
       document.getElementById('uploadStatus').innerHTML = '';
       document.getElementById('uploadForm').reset();
       uploadModalObj.show();
     }
 
-    // UPLOAD MP3 VIA API POST
     document.getElementById('uploadForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const targetRow = document.getElementById('targetRow').value;
@@ -233,8 +316,8 @@
       if (!file) return;
 
       btn.disabled = true;
-      btn.innerText = "Mengunggah via API...";
-      statusDiv.innerHTML = '<span class="text-primary">Mengirimkan file ke Server...</span>';
+      btn.innerText = "Mengunggah...";
+      statusDiv.innerHTML = '<span class="text-primary">Proses upload...</span>';
 
       const reader = new FileReader();
       reader.onload = function(evt) {
@@ -252,20 +335,20 @@
         .then(res => res.json())
         .then(res => {
           btn.disabled = false;
-          btn.innerText = "📤 Upload via API";
+          btn.innerText = "📤 Unggah Sekarang";
           if (res.status === "SUCCESS") {
-            statusDiv.innerHTML = '<span class="text-success">✅ Berhasil Diunggah!</span>';
+            statusDiv.innerHTML = '<span class="text-success fw-bold">✅ Berhasil!</span>';
             setTimeout(() => {
               uploadModalObj.hide();
               muatJadwal();
-            }, 1000);
+            }, 800);
           } else {
             statusDiv.innerHTML = '<span class="text-danger">❌ Gagal: ' + res.message + '</span>';
           }
         })
         .catch(err => {
           btn.disabled = false;
-          statusDiv.innerHTML = '<span class="text-danger">❌ Error API: ' + err.toString() + '</span>';
+          statusDiv.innerHTML = '<span class="text-danger">❌ Error API</span>';
         });
       };
 
@@ -285,18 +368,17 @@
       });
     }
 
-    // AMBIL BYTE AUDIO MP3 VIA API GET
     function putarMP3Server(audioId, keterangan) {
       if (!audioId) return;
 
       const player = document.getElementById('audioPlayer');
-      document.getElementById('nowPlayingText').innerText = `⏳ Memuat Audio MP3 via API: ${keterangan}...`;
+      document.getElementById('nowPlayingText').innerText = `⏳ Memuat Audio...`;
 
       fetch(`${API_URL}?action=getAudio&audioId=${audioId}`)
         .then(res => res.json())
         .then(res => {
           if (res.status === "SUCCESS" && res.data) {
-            document.getElementById('nowPlayingText').innerText = `▶️ Memutar MP3: ${keterangan}`;
+            document.getElementById('nowPlayingText').innerText = `▶️ Memutar: ${keterangan}`;
             player.src = "data:audio/mp3;base64," + res.data;
             player.play();
           } else {
@@ -304,7 +386,7 @@
           }
         })
         .catch(err => {
-          document.getElementById('nowPlayingText').innerText = `❌ Error API Audio!`;
+          document.getElementById('nowPlayingText').innerText = `❌ Error Audio!`;
         });
     }
 
