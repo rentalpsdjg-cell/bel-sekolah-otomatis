@@ -10,8 +10,6 @@
     :root {
       --primary-blue: #0066ff;
       --accent-cyan: #00d2ff;
-      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-      --glass-card: rgba(255, 255, 255, 0.95);
     }
     
     body {
@@ -20,12 +18,28 @@
       padding-bottom: 40px;
     }
 
-    /* HEADER KEREN */
+    /* OVERLAY AKTIVASI (Wajib untuk bypass Autoplay Policy Browser) */
+    #overlayActivation {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* HEADER */
     .app-header {
       background: linear-gradient(135deg, #0052d4, #4364f7, #6fb1fc);
       color: white;
       border-radius: 0 0 28px 28px;
-      padding: 20px 20px 25px 20px;
+      padding: 20px;
       box-shadow: 0 10px 25px rgba(0, 102, 255, 0.25);
     }
     .school-title {
@@ -33,7 +47,6 @@
       font-weight: 900;
       letter-spacing: 0.5px;
       margin: 0;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     .school-sub {
       font-size: 0.75rem;
@@ -41,10 +54,9 @@
       padding: 3px 10px;
       border-radius: 20px;
       font-weight: 700;
-      letter-spacing: 1px;
     }
 
-    /* WIDGET JAM DIGITAL FUTURISTIK */
+    /* JAM DIGITAL */
     .clock-card {
       background: linear-gradient(135deg, #0f172a, #1e293b);
       border-radius: 24px;
@@ -52,18 +64,6 @@
       color: white;
       box-shadow: 0 12px 30px rgba(15, 23, 42, 0.3);
       border: 1px solid rgba(255,255,255,0.1);
-      position: relative;
-      overflow: hidden;
-    }
-    .clock-card::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(0,210,255,0.1) 0%, transparent 60%);
-      pointer-events: none;
     }
     .digital-clock {
       font-size: 3.2rem;
@@ -72,14 +72,10 @@
       background: linear-gradient(to right, #00d2ff, #0066ff);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
     }
 
-    /* STATUS BADGE AUTOMATION */
+    /* BADGE STATUS */
     .auto-badge {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid #10b981;
-      color: #10b981;
       font-weight: 700;
       font-size: 0.85rem;
       padding: 8px 16px;
@@ -88,12 +84,22 @@
       align-items: center;
       gap: 8px;
     }
+    .badge-ready {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid #10b981;
+      color: #10b981;
+    }
+    .badge-locked {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid #ef4444;
+      color: #ef4444;
+    }
     .pulse-dot {
       width: 8px;
       height: 8px;
-      background-color: #10b981;
       border-radius: 50%;
-      box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+      background-color: currentColor;
+      box-shadow: 0 0 0 rgba(0, 0, 0, 0.4);
       animation: pulse 1.5s infinite;
     }
 
@@ -103,19 +109,12 @@
       100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
-    /* CARD JADWAL */
     .schedule-card {
       background: white;
       border-radius: 18px;
       padding: 16px;
       margin-bottom: 14px;
-      border: none;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-      transition: all 0.2s ease;
-    }
-    .schedule-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
     }
     .time-badge {
       background: #e6f0ff;
@@ -125,22 +124,29 @@
       padding: 6px 14px;
       border-radius: 12px;
     }
-
-    .btn-modern {
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      padding: 8px 14px;
-    }
   </style>
 </head>
 <body>
+
+  <!-- POP-UP AKTIVASI SUARA (MENGATASI BROWSER AUTOPLAY) -->
+  <div id="overlayActivation">
+    <div class="mb-4 text-center">
+      <i class="fa-solid fa-bell-concierge text-info display-1 mb-3"></i>
+      <h3 class="fw-bold">Aktivasi Bel Otomatis</h3>
+      <p class="text-white-50 px-3" style="max-width: 400px; font-size: 0.9rem;">
+        Browser membutuhkan 1x izin klik agar bel dapat berbunyi <strong>100% otomatis</strong> sesuai jadwal sepanjang hari tanpa terblokir.
+      </p>
+    </div>
+    <button class="btn btn-info text-white fw-bold btn-lg rounded-pill px-5 py-3 shadow-lg" onclick="aktifkanSistemBel()">
+      <i class="fa-solid fa-power-off me-2"></i> AKTIFKAN SISTEM BEL
+    </button>
+  </div>
 
   <!-- HEADER -->
   <div class="app-header mb-4">
     <div class="d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-3">
-        <div style="background: white; padding: 8px; border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+        <div style="background: white; padding: 8px; border-radius: 16px;">
           <i class="fa-solid fa-bell text-primary fs-3"></i>
         </div>
         <div>
@@ -148,7 +154,7 @@
           <h1 class="school-title mt-1">BEL SEKOLAH OTOMATIS</h1>
         </div>
       </div>
-      <button class="btn btn-sm btn-light border text-primary fw-bold rounded-circle p-2.5 shadow-sm" onclick="muatJadwal()">
+      <button class="btn btn-sm btn-light border text-primary fw-bold rounded-circle p-2.5" onclick="muatJadwal()">
         <i class="fa-solid fa-rotate-right"></i>
       </button>
     </div>
@@ -156,15 +162,15 @@
 
   <div class="container px-3">
     
-    <!-- WIDGET JAM DIGITAL -->
+    <!-- JAM DIGITAL -->
     <div class="clock-card text-center mb-4">
-      <div id="namaHariTanggal" class="small text-white-50 fw-semibold text-uppercase tracking-wider mb-1">--</div>
+      <div id="namaHariTanggal" class="small text-white-50 fw-semibold text-uppercase mb-1">--</div>
       <div class="digital-clock my-1" id="jamDigital">00:00:00</div>
       
       <div class="mt-3">
-        <div class="auto-badge">
+        <div id="statusSystemBadge" class="auto-badge badge-locked">
           <span class="pulse-dot"></span>
-          <span>SISTEM BEL FULL-OTOMATIS AKTIF</span>
+          <span id="statusText">SISTEM MEMBENTUR AUTOPLAY (PERLU AKTIVASI)</span>
         </div>
       </div>
     </div>
@@ -172,9 +178,9 @@
     <!-- PLAYER AUDIO -->
     <div class="card border-0 shadow-sm rounded-4 p-3 mb-4" style="background: white;">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small fw-bold text-secondary" id="nowPlayingText"><i class="fa-solid fa-signal text-success me-1"></i> Status: Standby Siaga</span>
+        <span class="small fw-bold text-secondary" id="nowPlayingText"><i class="fa-solid fa-signal text-success me-1"></i> Status: Siaga</span>
         <button class="btn btn-sm btn-outline-secondary rounded-pill py-0 px-2" style="font-size: 0.75rem;" onclick="tesBelSintetis()">
-          <i class="fa-solid fa-volume-high me-1"></i> Tes Bel
+          <i class="fa-solid fa-volume-high me-1"></i> Tes Suara
         </button>
       </div>
       <audio id="audioPlayer" controls style="width: 100%; height: 36px;"></audio>
@@ -197,7 +203,7 @@
 
     <!-- DAFTAR JADWAL -->
     <div id="daftarJadwalContainer">
-      <div class="text-center py-5 text-muted small"><i class="fa-solid fa-spinner fa-spin me-2"></i>Memuat data jadwal bel...</div>
+      <div class="text-center py-5 text-muted small"><i class="fa-solid fa-spinner fa-spin me-2"></i>Memuat jadwal...</div>
     </div>
 
   </div>
@@ -214,7 +220,7 @@
           <form id="uploadForm">
             <input type="hidden" id="targetRow">
             <div class="mb-3">
-              <label class="form-label small text-secondary fw-semibold">Pilih file MP3 dari HP/Laptop:</label>
+              <label class="form-label small text-secondary fw-semibold">Pilih MP3:</label>
               <input type="file" class="form-control rounded-3" id="audioFileInput" accept="audio/*" required>
             </div>
             <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3" id="btnSubmitUpload">
@@ -235,16 +241,44 @@
     let belSudahBunyi = {};
     const namaHari = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
     let uploadModalObj;
+    let systemUnlocked = false;
 
-    // SINTESIS AUDIO NATIVE (Pasti Berbunyi Otomatis Tanpa Diblokir Browser)
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Web Audio Context untuk Synthetic Beep
+    let audioCtx = null;
+
+    function aktifkanSistemBel() {
+      // 1. Inisialisasi AudioContext dengan gesture user
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      // 2. Play silent audio di HTML5 Audio Player untuk unlock HTML5 Audio
+      const player = document.getElementById('audioPlayer');
+      player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="; // 0.1 sec silent audio
+      player.play().then(() => {
+        player.pause();
+      }).catch(e => console.log(e));
+
+      // 3. Update UI
+      systemUnlocked = true;
+      document.getElementById('overlayActivation').style.display = 'none';
+      const badge = document.getElementById('statusSystemBadge');
+      badge.className = "auto-badge badge-ready";
+      document.getElementById('statusText').innerText = "SISTEM BEL OTOMATIS AKTIF (SIAGA 100%)";
+      
+      // Tes bunyi singkat konfirmasi
+      bunyikanBelSintetis();
+    }
 
     function bunyikanBelSintetis() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
       
-      // Melodi Bel Sekolah 2-Nada (Ding-Dong)
       const playTone = (freq, startTime, duration) => {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -262,7 +296,7 @@
       };
 
       const now = audioCtx.currentTime;
-      // Nada 1 (Ding) -> Nada 2 (Dong) Diulang 3 Kali
+      // Nada Bel Ding-Dong 3x
       [0, 1.2, 2.4].forEach(delay => {
         playTone(659.25, now + delay, 0.8);       // E5
         playTone(523.25, now + delay + 0.4, 1.0); // C5
@@ -271,7 +305,7 @@
 
     function tesBelSintetis() {
       bunyikanBelSintetis();
-      document.getElementById('nowPlayingText').innerText = "🔔 Menguji Suara Bel Sintetis...";
+      document.getElementById('nowPlayingText').innerText = "🔔 Menguji Suara Bel...";
     }
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -291,6 +325,7 @@
       const tanggal = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       document.getElementById('namaHariTanggal').innerText = `${hariSekarang}, ${tanggal}`;
 
+      // Cek jadwal tiap detik ke-00
       if (s === "00") {
         cekJadwalBel(jamSekarang, hariSekarang);
       }
@@ -307,7 +342,7 @@
           tampilkanTabelJadwal();
         })
         .catch(err => {
-          container.innerHTML = '<div class="text-center py-4 text-danger small">Gagal terhubung ke API. Silakan refresh.</div>';
+          container.innerHTML = '<div class="text-center py-4 text-danger small">Gagal terhubung ke server API.</div>';
         });
     }
 
@@ -330,15 +365,15 @@
       }
 
       if (jadwalFiltered.length === 0) {
-        container.innerHTML = '<div class="text-center py-5 text-muted small">Tidak ada jadwal bel untuk hari ini.</div>';
+        container.innerHTML = '<div class="text-center py-5 text-muted small">Tidak ada jadwal bel untuk periode ini.</div>';
         return;
       }
 
       jadwalFiltered.forEach((j) => {
         const hasAudio = j.audioId !== "";
         const statusBadge = hasAudio 
-          ? '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">MP3 Siap</span>' 
-          : '<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">Bel Sintetis</span>';
+          ? '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">MP3 Ready</span>' 
+          : '<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill">Sintetis</span>';
 
         container.innerHTML += `
           <div class="schedule-card">
@@ -353,10 +388,10 @@
             <div class="fw-bold text-dark my-2" style="font-size: 1.05rem;">${j.keterangan}</div>
             
             <div class="d-flex gap-2 mt-3">
-              <button class="btn btn-sm btn-outline-primary btn-modern w-100" onclick="bukaModalUpload(${j.rowNum}, '${j.keterangan}')">
+              <button class="btn btn-sm btn-outline-primary w-100 fw-bold" onclick="bukaModalUpload(${j.rowNum}, '${j.keterangan}')">
                 <i class="fa-solid fa-upload me-1"></i> Upload MP3
               </button>
-              ${hasAudio ? `<button class="btn btn-sm btn-primary btn-modern w-100" onclick="putarMP3Server('${j.audioId}', '${j.keterangan}')"><i class="fa-solid fa-play me-1"></i> Tes MP3</button>` : ''}
+              ${hasAudio ? `<button class="btn btn-sm btn-primary w-100 fw-bold" onclick="putarMP3Server('${j.audioId}', '${j.keterangan}')"><i class="fa-solid fa-play me-1"></i> Tes MP3</button>` : ''}
             </div>
           </div>
         `;
@@ -383,7 +418,7 @@
 
       btn.disabled = true;
       btn.innerText = "Mengunggah...";
-      statusDiv.innerHTML = '<span class="text-primary">Memproses upload file...</span>';
+      statusDiv.innerHTML = '<span class="text-primary">Uploading...</span>';
 
       const reader = new FileReader();
       reader.onload = function(evt) {
@@ -403,7 +438,7 @@
           btn.disabled = false;
           btn.innerText = "📤 Unggah Sekarang";
           if (res.status === "SUCCESS") {
-            statusDiv.innerHTML = '<span class="text-success fw-bold">✅ Berhasil Diunggah!</span>';
+            statusDiv.innerHTML = '<span class="text-success fw-bold">✅ Berhasil Upload!</span>';
             setTimeout(() => {
               uploadModalObj.hide();
               muatJadwal();
@@ -431,10 +466,8 @@
           belSudahBunyi[key] = true;
           
           if (j.audioId !== "") {
-            // Putar MP3 jika file audio ada
             putarMP3Server(j.audioId, j.keterangan);
           } else {
-            // JIKA FILE MP3 KOSONG: Otomatis bunyikan bel nada sintetis!
             document.getElementById('nowPlayingText').innerText = `🔔 Bel Berbunyi: ${j.keterangan}`;
             bunyikanBelSintetis();
           }
@@ -454,10 +487,15 @@
           if (res.status === "SUCCESS" && res.data) {
             document.getElementById('nowPlayingText').innerText = `▶️ Memutar MP3: ${keterangan}`;
             player.src = "data:audio/mp3;base64," + res.data;
-            player.play().catch(e => {
-              // Cadangan otomatis jika MP3 diblokir: Bunyikan bel sintetis!
-              bunyikanBelSintetis();
-            });
+            
+            // Autoplay MP3
+            const playPromise = player.play();
+            if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                console.log("MP3 Auto-play gagal, dialihkan ke Sintetis: ", error);
+                bunyikanBelSintetis();
+              });
+            }
           } else {
             bunyikanBelSintetis();
           }
