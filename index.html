@@ -18,7 +18,7 @@
       padding-bottom: 40px;
     }
 
-    /* OVERLAY AKTIVASI (Wajib untuk bypass Autoplay Policy Browser) */
+    /* OVERLAY AKTIVASI (Bypass Autoplay Policy Browser) */
     #overlayActivation {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -128,7 +128,7 @@
 </head>
 <body>
 
-  <!-- POP-UP AKTIVASI SUARA (MENGATASI BROWSER AUTOPLAY) -->
+  <!-- POP-UP AKTIVASI SUARA -->
   <div id="overlayActivation">
     <div class="mb-4 text-center">
       <i class="fa-solid fa-bell-concierge text-info display-1 mb-3"></i>
@@ -243,45 +243,45 @@
     let uploadModalObj;
     let systemUnlocked = false;
 
-    // Web Audio Context untuk Synthetic Beep
+    // Web Audio Context
     let audioCtx = null;
 
-    function aktifkanSistemBel() {
-      // 1. Inisialisasi AudioContext dengan gesture user
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
-      // 2. Play silent audio di HTML5 Audio Player untuk unlock HTML5 Audio
-      const player = document.getElementById('audioPlayer');
-      player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="; // 0.1 sec silent audio
-      player.play().then(() => {
-        player.pause();
-      }).catch(e => console.log(e));
-
-      // 3. Update UI
-      systemUnlocked = true;
-      document.getElementById('overlayActivation').style.display = 'none';
-      const badge = document.getElementById('statusSystemBadge');
-      badge.className = "auto-badge badge-ready";
-      document.getElementById('statusText').innerText = "SISTEM BEL OTOMATIS AKTIF (SIAGA 100%)";
-      
-      // Tes bunyi singkat konfirmasi
-      bunyikanBelSintetis();
-    }
-
-    function bunyikanBelSintetis() {
+    // FIX 1: Pastikan AudioContext selalu terhubung dan aktif
+    function dapatkanAudioContext() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      return audioCtx;
+    }
+
+    function aktifkanSistemBel() {
+      dapatkanAudioContext();
+
+      // Play silent audio di HTML5 Audio Player
+      const player = document.getElementById('audioPlayer');
+      player.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+      player.play().then(() => {
+        player.pause();
+      }).catch(e => console.log(e));
+
+      systemUnlocked = true;
+      document.getElementById('overlayActivation').style.display = 'none';
+      const badge = document.getElementById('statusSystemBadge');
+      badge.className = "auto-badge badge-ready";
+      document.getElementById('statusText').innerText = "SISTEM BEL OTOMATIS AKTIF (SIAGA 100%)";
+      
+      bunyikanBelSintetis();
+    }
+
+    function bunyikanBelSintetis() {
+      const ctx = dapatkanAudioContext();
       
       const playTone = (freq, startTime, duration) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, startTime);
         
@@ -289,13 +289,13 @@
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
         
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
+        gain.connect(ctx.destination);
         
         osc.start(startTime);
         osc.stop(startTime + duration);
       };
 
-      const now = audioCtx.currentTime;
+      const now = ctx.currentTime;
       // Nada Bel Ding-Dong 3x
       [0, 1.2, 2.4].forEach(delay => {
         playTone(659.25, now + delay, 0.8);       // E5
@@ -312,6 +312,19 @@
       uploadModalObj = new bootstrap.Modal(document.getElementById('uploadModal'));
     });
 
+    // FIX 2: Format jam disamakan (HH:MM)
+    function normalisasiJam(strJam) {
+      if (!strJam) return "";
+      let bersih = String(strJam).trim();
+      let parts = bersih.split(':');
+      if (parts.length >= 2) {
+        let jam = parts[0].padStart(2, '0');
+        let menit = parts[1].padStart(2, '0');
+        return `${jam}:${menit}`;
+      }
+      return bersih;
+    }
+
     function updateClock() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
@@ -327,14 +340,16 @@
 
       // Cek jadwal tiap detik ke-00
       if (s === "00") {
+        if (audioCtx && audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
         cekJadwalBel(jamSekarang, hariSekarang);
       }
     }
 
     function muatJadwal() {
       const container = document.getElementById('daftarJadwalContainer');
-      container.innerHTML = '<div class="text-center py-4 text-muted small"><i class="fa-solid fa-spinner fa-spin me-2"></i>Memuat jadwal...</div>';
-
+      
       fetch(`${API_URL}?action=getJadwal`)
         .then(res => res.json())
         .then(data => {
@@ -357,11 +372,11 @@
       let jadwalFiltered = [];
 
       if (filterPilihan === "HARI_INI") {
-        jadwalFiltered = daftarJadwal.filter(j => j.hari === hariIni || j.hari === 'semua');
+        jadwalFiltered = daftarJadwal.filter(j => (j.hari || '').toLowerCase().trim() === hariIni || (j.hari || '').toLowerCase().trim() === 'semua');
       } else if (filterPilihan === "SEMUA") {
         jadwalFiltered = daftarJadwal;
       } else {
-        jadwalFiltered = daftarJadwal.filter(j => j.hari === filterPilihan || j.hari === 'semua');
+        jadwalFiltered = daftarJadwal.filter(j => (j.hari || '').toLowerCase().trim() === filterPilihan || (j.hari || '').toLowerCase().trim() === 'semua');
       }
 
       if (jadwalFiltered.length === 0) {
@@ -370,6 +385,7 @@
       }
 
       jadwalFiltered.forEach((j) => {
+        const jamBersih = normalisasiJam(j.jam);
         const hasAudio = j.audioId !== "";
         const statusBadge = hasAudio 
           ? '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">MP3 Ready</span>' 
@@ -378,7 +394,7 @@
         container.innerHTML += `
           <div class="schedule-card">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="time-badge"><i class="fa-regular fa-clock me-1"></i>${j.jam} WIB</span>
+              <span class="time-badge"><i class="fa-regular fa-clock me-1"></i>${jamBersih} WIB</span>
               <div>
                 <span class="badge bg-light text-dark text-uppercase me-1">${j.hari}</span>
                 ${statusBadge}
@@ -456,16 +472,20 @@
       reader.readAsDataURL(file);
     });
 
+    // FIX 3: Logika Pencocokan Jam dan Hari yang Stabil
     function cekJadwalBel(jamSekarang, hariSekarang) {
       daftarJadwal.forEach(j => {
-        const cocokHari = (j.hari === hariSekarang || j.hari === 'semua');
-        const cocokJam = (j.jam === jamSekarang);
-        const key = `${hariSekarang}_${jamSekarang}_${j.keterangan}`;
+        const hariJadwal = (j.hari || '').toLowerCase().trim();
+        const jamJadwal = normalisasiJam(j.jam);
+
+        const cocokHari = (hariJadwal === hariSekarang || hariJadwal === 'semua');
+        const cocokJam = (jamJadwal === jamSekarang);
+        const key = `${hariSekarang}_${jamJadwal}_${j.keterangan}`;
 
         if (cocokHari && cocokJam && !belSudahBunyi[key]) {
           belSudahBunyi[key] = true;
           
-          if (j.audioId !== "") {
+          if (j.audioId && j.audioId !== "") {
             putarMP3Server(j.audioId, j.keterangan);
           } else {
             document.getElementById('nowPlayingText').innerText = `🔔 Bel Berbunyi: ${j.keterangan}`;
@@ -488,11 +508,10 @@
             document.getElementById('nowPlayingText').innerText = `▶️ Memutar MP3: ${keterangan}`;
             player.src = "data:audio/mp3;base64," + res.data;
             
-            // Autoplay MP3
             const playPromise = player.play();
             if (playPromise !== undefined) {
               playPromise.catch(error => {
-                console.log("MP3 Auto-play gagal, dialihkan ke Sintetis: ", error);
+                console.log("MP3 Auto-play terhalang, beralih ke Sintetis: ", error);
                 bunyikanBelSintetis();
               });
             }
